@@ -1,0 +1,3 @@
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+livekit-api>=0.8,<2
