@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Call｜語音銷售管理台預覽</title>
+  <meta name="description" content="AI Call 語音銷售管理台互動預覽">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23172d44'/%3E%3Cpath d='M15 31h8l5-13 8 29 5-16h8' fill='none' stroke='%2374e2c1' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root{font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Noto Sans TC",sans-serif;color:#23374c;background:#f4f7f9}
+    *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}
+    .app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100vh}
+    aside{background:#142b42;color:#d9e4ed;padding:27px 18px;display:flex;flex-direction:column;gap:30px}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:1.35rem;color:white;padding:0 11px}
+    .mark{display:grid;place-items:center;background:#284b63;color:#7fe6c8;width:38px;height:38px;border-radius:11px;font-size:1.35rem}
+    nav{display:grid;gap:5px}nav button{background:transparent;border:0;color:#becdda;text-align:left;padding:12px 14px;border-radius:10px;font-weight:600}
+    nav button:hover,nav button.active{background:#28445d;color:white}
+    nav button span{display:inline-block;width:27px;color:#82acbf}
+    .aside-foot{margin-top:auto;border-top:1px solid #345066;padding:18px 12px 0;font-size:.88rem;color:#a9becd}
+    main{min-width:0;padding:30px clamp(22px,4vw,58px) 70px;max-width:1500px;width:100%;margin:auto}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px}
+    h1{font-size:1.7rem;letter-spacing:-.03em;margin:0;color:#17334b}h2{font-size:1.13rem;margin:0;color:#1b364e}
+    p{margin:0}.sub{color:#718396;font-size:.95rem;margin-top:4px}
+    .badge{border:1px solid #bfd8d3;background:#e9f6f2;color:#287962;border-radius:50px;padding:7px 11px;font-weight:700;font-size:.82rem;white-space:nowrap}
+    .notice{padding:13px 17px;background:#fff8e8;border:1px solid #f0dfb5;border-radius:10px;color:#7d5b1f;margin-bottom:22px;font-size:.9rem}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid #e2e9ee;border-radius:14px;box-shadow:0 4px 18px rgba(22,50,72,.035)}
+    .card{padding:19px}.k{font-size:.87rem;color:#75879a}.v{font-size:1.9rem;font-weight:800;letter-spacing:-.05em;color:#1c374d;margin-top:5px}.delta{font-size:.8rem;color:#378d78}
+    .cols{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:16px;margin-top:17px}
+    .panel{padding:22px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:19px}.textlink{border:0;background:none;color:#227f75;font-weight:700}
+    .campaign{display:flex;justify-content:space-between;gap:20px;align-items:center;border:1px solid #e7ecef;border-radius:11px;padding:16px;margin-bottom:11px}
+    .campaign strong{display:block}.muted{color:#7b8b9a;font-size:.85rem;margin-top:3px}.pill{padding:5px 9px;border-radius:6px;background:#ebf6ef;color:#318262;font-size:.78rem;font-weight:800;white-space:nowrap}
+    .pill.gray{background:#edf1f4;color:#667787}.bar{height:7px;background:#edf1f3;border-radius:10px;margin-top:12px;overflow:hidden}.bar i{display:block;background:#56bfa9;height:100%;border-radius:10px}
+    .flow{display:grid;gap:10px}.step{border:1px solid #dce8ed;padding:13px 15px;border-radius:10px;display:flex;align-items:center;gap:12px;font-size:.91rem}.num{display:grid;place-items:center;width:27px;height:27px;background:#e4f4f0;border-radius:8px;color:#207b6d;font-weight:800;flex:none}
+    .actions{display:flex;flex-wrap:wrap;gap:10px}.primary{background:#1c796d;color:white;border:1px solid #1c796d;border-radius:9px;padding:10px 15px;font-weight:700}.primary:hover{background:#176459}.secondary{background:white;border:1px solid #cbd8df;color:#35536b;border-radius:9px;padding:10px 15px;font-weight:700}
+    table{width:100%;border-collapse:collapse;font-size:.91rem}th{text-align:left;color:#8190a0;font-weight:600;border-bottom:1px solid #e7edf0;padding:11px 10px}td{border-bottom:1px solid #eef2f3;padding:14px 10px}tr:last-child td{border:0}
+    .section{display:none}.section.active{display:block}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:grid;gap:7px;font-weight:650;font-size:.9rem}.field input,.field select{border:1px solid #cfdce3;border-radius:9px;background:white;color:#294155;padding:11px 12px;width:100%}
+    .textarea{min-height:170px;border:1px solid #cfdce3;border-radius:9px;padding:14px;color:#304b5c;background:#fbfcfd;white-space:pre-wrap;line-height:1.7}
+    .callout{padding:15px;background:#eef7f5;color:#376f68;border-radius:10px;font-size:.9rem}.empty{border:1px dashed #c9d7df;border-radius:12px;padding:50px 22px;text-align:center;color:#73899a}
+    dialog{border:0;border-radius:16px;width:min(470px,calc(100% - 28px));padding:25px;box-shadow:0 20px 80px #102d4266}dialog::backdrop{background:#102e42aa}dialog h2{margin-bottom:5px}dialog .field{margin:20px 0}.dialog-actions{display:flex;justify-content:flex-end;gap:10px}
+    @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
+    @media(max-width:700px){.app{display:block}aside{padding:14px;gap:12px}.brand{font-size:1.1rem}nav{display:flex;overflow-x:auto}nav button{white-space:nowrap;padding:9px 12px}.aside-foot{display:none}main{padding:22px 15px 45px}.top{align-items:flex-start}.grid{gap:9px}.card{padding:14px}.v{font-size:1.55rem}.panel{padding:17px}.form-grid{grid-template-columns:1fr}.table-wrap{overflow:auto}table{min-width:620px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><span class="mark">◖</span> AI Call</div>
+    <nav aria-label="主選單">
+      <button class="active" data-page="overview"><span>◫</span> 總覽</button>
+      <button data-page="agents"><span>◎</span> 銷售 Agent</button>
+      <button data-page="campaigns"><span>▤</span> 外撥任務</button>
+      <button data-page="calls"><span>◷</span> 通話記錄</button>
+    </nav>
+    <div class="aside-foot">語音銷售管理台<br>示範介面 · 未連接電話線路</div>
+  </aside>
+  <main>
+    <header class="top"><div><h1 id="title">總覽</h1><p class="sub" id="subtitle">掌握銷售對話同外撥進度</p></div><span class="badge">● 示範模式</span></header>
+    <div class="notice">呢個係可操作嘅 UI 預覽，數字同名單係示範資料；「測試通話」只展示流程，唔會真係撥號。</div>
+    <section class="section active" id="overview">
+      <div class="grid">
+        <div class="card"><div class="k">今日撥出</div><div class="v">48</div><div class="delta">示範數據</div></div>
+        <div class="card"><div class="k">成功接通</div><div class="v">31</div><div class="delta">接通率 64.6%</div></div>
+        <div class="card"><div class="k">有興趣客戶</div><div class="v">9</div><div class="delta">待真人跟進</div></div>
+        <div class="card"><div class="k">轉真人</div><div class="v">4</div><div class="delta">平均 2 分 18 秒</div></div>
+      </div>
+      <div class="cols">
+        <div class="panel"><div class="panel-head"><h2>外撥任務</h2><button class="textlink" data-open="campaigns">查看全部 →</button></div>
+          <div class="campaign"><div style="flex:1"><strong>九月意向客戶回訪</strong><div class="muted">已完成 48 / 80 通 · 香港粵語</div><div class="bar"><i style="width:60%"></i></div></div><span class="pill">進行中</span></div>
+          <div class="campaign"><div style="flex:1"><strong>新客戶產品介紹</strong><div class="muted">等待線路驗證 · 20 位客戶</div></div><span class="pill gray">未開始</span></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h2>AI 對話流程</h2><button class="textlink" data-open="agents">編輯設定 →</button></div>
+          <div class="flow"><div class="step"><span class="num">1</span> 表明 AI 身份，詢問是否方便</div><div class="step"><span class="num">2</span> 了解需求，按知識庫回答</div><div class="step"><span class="num">3</span> 處理疑慮，辨識意向</div><div class="step"><span class="num">4</span> 高意向轉真人／安排跟進</div></div>
+        </div>
+      </div>
+    </section>
+    <section class="section" id="agents">
+      <div class="toolbar"><h2>銷售 Agent</h2><div class="actions"><button class="secondary" id="previewVoice">試聽對話</button><button class="primary" id="testCall">測試通話</button></div></div>
+      <div class="cols"><div class="panel"><div class="panel-head"><h2>香港粵語銷售助理</h2><span class="pill gray">草稿示意</span></div>
+        <div class="form-grid"><label class="field">主要語言<select><option>香港粵語</option><option>普通話</option><option>英語</option></select></label><label class="field">聲線<select><option>自然親切 · 女聲</option><option>穩重專業 · 男聲</option></select></label></div>
+        <p class="muted" style="margin:19px 0 8px">開場白</p><div class="textarea" contenteditable="true" role="textbox" aria-label="開場白">你好，我係 AI 語音助理。想簡單同你介紹我哋嘅服務，依家方便講兩分鐘嗎？</div>
+        <p class="muted" style="margin:19px 0 8px">銷售原則</p><div class="textarea" contenteditable="true" role="textbox" aria-label="銷售原則">用自然香港粵語對答，先了解客人需要。唔肯定嘅資料要坦白講；客人有興趣就安排真人跟進。客人表示唔想再接電話，即刻禮貌結束。</div>
+      </div><div class="panel"><div class="panel-head"><h2>設定檢查</h2></div><div class="flow"><div class="step"><span class="num">✓</span> 開場同身份披露</div><div class="step"><span class="num">✓</span> 允許客人打斷</div><div class="step"><span class="num">—</span> 真人轉接：待設定</div><div class="step"><span class="num">—</span> 香港線路：待驗證</div></div><div class="callout" style="margin-top:20px">正式版會由 Dograh 管理對話流程，LiveKit 處理即時語音。呢度嘅編輯只喺預覽頁顯示，未儲存到後端。</div></div></div>
+    </section>
+    <section class="section" id="campaigns"><div class="toolbar"><h2>外撥任務</h2><button class="primary" id="newCampaign">建立任務</button></div><div class="panel"><div class="campaign"><div><strong>九月意向客戶回訪</strong><div class="muted">80 位客戶 · 示範進度 60%</div></div><span class="pill">進行中</span></div><div class="campaign"><div><strong>新客戶產品介紹</strong><div class="muted">20 位客戶 · 待線路測試</div></div><span class="pill gray">未開始</span></div><div class="callout">正式外撥前會設定測試號碼白名單、撥號時間、同時通話數同停止規則。</div></div></section>
+    <section class="section" id="calls"><div class="toolbar"><h2>通話記錄</h2><button class="secondary" id="filterCalls">只看有興趣</button></div><div class="panel table-wrap"><table><thead><tr><th>時間</th><th>客戶</th><th>結果</th><th>時長</th><th>跟進</th></tr></thead><tbody id="callRows"><tr data-interest="true"><td>今日 14:32</td><td>客戶 A · 尾號 4821</td><td><span class="pill">有興趣</span></td><td>03:14</td><td>安排真人回電</td></tr><tr data-interest="false"><td>今日 14:06</td><td>客戶 B · 尾號 9308</td><td><span class="pill gray">稍後再聯絡</span></td><td>01:42</td><td>明日跟進</td></tr><tr data-interest="true"><td>今日 13:55</td><td>客戶 C · 尾號 6720</td><td><span class="pill">轉真人</span></td><td>04:08</td><td>已交接</td></tr><tr data-interest="false"><td>今日 13:20</td><td>客戶 D · 尾號 2486</td><td><span class="pill gray">未接通</span></td><td>—</td><td>按規則重試</td></tr></tbody></table></div></section>
+  </main>
+</div>
+<dialog id="modal"><h2 id="modalTitle">測試通話</h2><p class="sub" id="modalDesc">預覽模式唔會撥出電話。</p><label class="field">測試號碼<input type="tel" placeholder="+852 你的測試號碼" id="testNumber"></label><div class="dialog-actions"><button class="secondary" id="closeModal">取消</button><button class="primary" id="confirmModal">了解</button></div></dialog>
+<script>
+  const titles={overview:['總覽','掌握銷售對話同外撥進度'],agents:['銷售 Agent','設定粵語聲線、開場白同對答原則'],campaigns:['外撥任務','安排名單及檢查進度'],calls:['通話記錄','查看結果及真人跟進']};
+  function page(id){document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));document.getElementById('title').textContent=titles[id][0];document.getElementById('subtitle').textContent=titles[id][1];window.scrollTo(0,0)}
+  document.querySelectorAll('[data-page]').forEach(x=>x.addEventListener('click',()=>page(x.dataset.page)));
+  document.querySelectorAll('[data-open]').forEach(x=>x.addEventListener('click',()=>page(x.dataset.open)));
+  const modal=document.getElementById('modal');
+  function show(title,desc){document.getElementById('modalTitle').textContent=title;document.getElementById('modalDesc').textContent=desc;document.querySelector('#modal .field').style.display=title==='測試通話'?'grid':'none';modal.showModal()}
+  document.getElementById('testCall').onclick=()=>show('測試通話','呢個係 UI 預覽；輸入號碼都唔會撥出。正式版會先驗證白名單同線路。');
+  document.getElementById('previewVoice').onclick=()=>show('試聽對話','正式版接通聲線服務後，呢度可以直接同 Agent 傾偈。');
+  document.getElementById('newCampaign').onclick=()=>show('建立任務','正式版接通 Dograh 後可匯入名單、設定時段同啟動外撥。');
+  document.getElementById('closeModal').onclick=()=>modal.close();
+  document.getElementById('confirmModal').onclick=()=>modal.close();
+  let onlyInterest=false;document.getElementById('filterCalls').onclick=e=>{onlyInterest=!onlyInterest;document.querySelectorAll('#callRows tr').forEach(r=>r.hidden=onlyInterest&&r.dataset.interest!=='true');e.target.textContent=onlyInterest?'顯示全部':'只看有興趣'};
+</script>
+</body>
+</html>
