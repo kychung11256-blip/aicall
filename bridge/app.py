@@ -2,6 +2,8 @@ import json
 import os
 import re
 import uuid
+import asyncio
+import urllib.request
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
@@ -38,6 +40,36 @@ def settings() -> Settings:
     )
 
 
+def approved_dograh_prompt() -> tuple[str, str]:
+    """Read one published startCall -> endCall workflow; reject unsupported graphs."""
+    base = os.getenv("DOGRAH_BASE_URL", "").rstrip("/")
+    key = os.getenv("DOGRAH_API_KEY", "")
+    workflow_id = os.getenv("DOGRAH_WORKFLOW_ID", "")
+    if not base or not key or not workflow_id.isdigit():
+        raise ValueError("Dograh is not configured")
+    req = urllib.request.Request(
+        f"{base}/workflow/fetch/{workflow_id}",
+        headers={"X-API-Key": key, "Accept": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=8) as response:
+        data = json.load(response)
+    if data.get("version_status") != "published":
+        raise ValueError("Workflow must be published")
+    graph = data.get("workflow_definition") or {}
+    nodes, edges = graph.get("nodes", []), graph.get("edges", [])
+    start = next((n for n in nodes if n.get("type") == "startCall"), None)
+    end = next((n for n in nodes if n.get("type") == "endCall"), None)
+    if (len(nodes) != 2 or len(edges) != 1 or not start or not end
+            or edges[0].get("source") != start.get("id")
+            or edges[0].get("target") != end.get("id")):
+        raise ValueError("Only startCall -> endCall is supported in this trial")
+    prompt = start.get("data", {}).get("prompt", "").strip()
+    version = str(data.get("version_number") or "")
+    if not prompt or len(prompt) > 16000 or not version:
+        raise ValueError("Invalid published workflow")
+    return version, prompt
+
+
 class CallRequest(BaseModel):
     lead_id: str = Field(min_length=1, max_length=128)
     phone: str
@@ -45,7 +77,7 @@ class CallRequest(BaseModel):
     idempotency_key: str = Field(min_length=1, max_length=128)
 
 
-async def dial(cfg: Settings, room: str, request: CallRequest) -> None:
+async def dial(cfg: Settings, room: str, request: CallRequest, instructions: str) -> None:
     # Dispatch before dialing, so an Agent is waiting when the callee answers.
     from livekit import api
 
@@ -60,6 +92,7 @@ async def dial(cfg: Settings, room: str, request: CallRequest) -> None:
                 metadata=json.dumps({
                     "lead_id": request.lead_id,
                     "workflow_version": request.workflow_version,
+                    "instructions": instructions,
                 }),
             )
         )
@@ -85,6 +118,12 @@ async def create_call(request: CallRequest, x_bridge_key: str = Header(default="
         raise HTTPException(status_code=401, detail="Unauthorized")
     if not PHONE.fullmatch(request.phone) or request.phone not in cfg.allowed:
         raise HTTPException(status_code=403, detail="Number not on test allowlist")
+    try:
+        version, instructions = await asyncio.to_thread(approved_dograh_prompt)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Dograh unavailable: {type(exc).__name__}") from exc
+    if request.workflow_version != version:
+        raise HTTPException(status_code=409, detail=f"Use published workflow version {version}")
     existing = records.get(request.idempotency_key)
     if existing:
         if existing["lead_id"] != request.lead_id or existing["phone"] != request.phone or existing["workflow_version"] != request.workflow_version:
@@ -104,7 +143,7 @@ async def create_call(request: CallRequest, x_bridge_key: str = Header(default="
             raise HTTPException(status_code=503, detail="LiveKit is not configured")
         records[request.idempotency_key] = {**result, "status": "initiating"}
         try:
-            await dial(cfg, room, request)
+            await dial(cfg, room, request, instructions)
         except Exception:
             records[request.idempotency_key]["status"] = "unknown_check_provider_before_retry"
             raise HTTPException(status_code=502, detail="Call setup failed; check provider before retry")
